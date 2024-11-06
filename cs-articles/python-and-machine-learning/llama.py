@@ -281,7 +281,7 @@ def integrate_llamaindex(query):
 
 
 # Issue a search query
-query = input("What is a cat?")
+query = "What is a cat?"
 
 # Plain FAISS based usage:
 results = multimodal_search(query)
