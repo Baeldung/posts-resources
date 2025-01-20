@@ -1,0 +1,241 @@
+=== Starting test of simpledb ===
+=== Using three database directories: testdb1, testdb2 and testdb3 ===
+
+### 1) Testing missing arguments or invalid usage...
+- Attempting to run without arguments (expect usage error):
+Usage:
+  ./simpledb --db-path <PATH> COMMAND [ARGS...]
+
+Commands:
+  list <table>
+  get <table> field=value
+  save <table> field1=value1 [field2=value2 ...]
+  delete <table> field=value
+
+Options:
+  --db-path <PATH>   Required. Path to the database directory.
+
+- Attempting to run with no --db-path (expect usage error):
+Usage:
+  ./simpledb --db-path <PATH> COMMAND [ARGS...]
+
+Commands:
+  list <table>
+  get <table> field=value
+  save <table> field1=value1 [field2=value2 ...]
+  delete <table> field=value
+
+Options:
+  --db-path <PATH>   Required. Path to the database directory.
+
+- Attempting to run with --db-path but no command (expect usage error):
+Usage:
+  ./simpledb --db-path <PATH> COMMAND [ARGS...]
+
+Commands:
+  list <table>
+  get <table> field=value
+  save <table> field1=value1 [field2=value2 ...]
+  delete <table> field=value
+
+Options:
+  --db-path <PATH>   Required. Path to the database directory.
+
+- Attempting an unknown command (expect error):
+Error: Unknown command 'unknowncmd'
+Usage:
+  ./simpledb --db-path <PATH> COMMAND [ARGS...]
+
+Commands:
+  list <table>
+  get <table> field=value
+  save <table> field1=value1 [field2=value2 ...]
+  delete <table> field=value
+
+Options:
+  --db-path <PATH>   Required. Path to the database directory.
+
+
+### 2) Creating and listing a simple table...
+- Listing 'users' in testdb1 (should be empty JSON array):
+- Checking the content of testdb1/users.json (should exist after first command, or created empty).
+total 0
+
+### 3) Save new records and update existing ones...
+- Adding a new record with id=100 to 'users' in testdb1:
+{"id":"100","name":"John Doe","age":"30","email":"john@example.com"}
+- Listing 'users' again (should show John):
+{"id":"100","name":"John Doe","age":"30","email":"john@example.com"}
+- Updating record with id=100 (changing email):
+{"id":"100","name":"John Doe","age":"30","email":"johndoe@newmail.com"}
+- Listing 'users' again (should show updated email):
+{"id":"100","name":"John Doe","age":"30","email":"johndoe@newmail.com"}
+- Adding second record with id=200...
+{"id":"200","name":"Alice","age":"28","email":"alice@example.com"}
+- Listing 'users' to confirm the second record...
+{"id":"100","name":"John Doe","age":"30","email":"johndoe@newmail.com"}
+{"id":"200","name":"Alice","age":"28","email":"alice@example.com"}
+
+### 4) Get by field value...
+- Getting users with id=100 (should return John):
+{"id":"100","name":"John Doe","age":"30","email":"johndoe@newmail.com"}
+- Getting users with email=alice@example.com (should return Alice):
+{"id":"200","name":"Alice","age":"28","email":"alice@example.com"}
+- Getting users with an unknown field (should return no records):
+
+### 5) Delete records...
+- Deleting user with id=200:
+Deleted 1 record(s)
+- Listing users (should only have John now):
+{"id":"100","name":"John Doe","age":"30","email":"johndoe@newmail.com"}
+- Trying to delete a non-existent user (id=9999) (should delete 0):
+Deleted 0 record(s)
+- Listing users again to confirm no change:
+{"id":"100","name":"John Doe","age":"30","email":"johndoe@newmail.com"}
+
+### 6) Working with multiple tables within the same database...
+- Creating a 'products' table in testdb1...
+{"id":"5001","name":"Widget","price":"19.99"}
+{"id":"5002","name":"Gadget","price":"29.99"}
+- Listing 'products':
+{"id":"5001","name":"Widget","price":"19.99"}
+{"id":"5002","name":"Gadget","price":"29.99"}
+- We still have 'users' table too. Listing 'users' again to check everything is intact:
+{"id":"100","name":"John Doe","age":"30","email":"johndoe@newmail.com"}
+
+### 7) Creating and using a second separate database directory (testdb2)...
+- Let's add a 'users' table in testdb2 with different data...
+{"id":"999","name":"Jane Doe","email":"jane@example.com"}
+{"id":"999","name":"Jane Doe","email":"jane@example.com"}
+- testdb1 and testdb2 are totally independent. Checking each directory's content:
+Contents of testdb1:
+total 8
+-rw-rw-r-- 1 francesco francesco 93 Jan  6 17:10 products.json
+-rw-rw-r-- 1 francesco francesco 73 Jan  6 17:10 users.json
+Contents of testdb2:
+total 4
+-rw-rw-r-- 1 francesco francesco 59 Jan  6 17:10 users.json
+
+### 8) Combining simpledb with grep and jq...
+- Let's add a few more users to testdb1's 'users' table...
+{"id":"101","name":"Alpha Tester","email":"alpha@example.com"}
+{"id":"102","name":"Beta Tester","email":"beta@example.com"}
+- Now listing all users in JSON lines format:
+{"id":"100","name":"John Doe","age":"30","email":"johndoe@newmail.com"}
+{"id":"101","name":"Alpha Tester","email":"alpha@example.com"}
+{"id":"102","name":"Beta Tester","email":"beta@example.com"}
+
+#### 8a) Using grep to find user names containing 'Tester':
+{"id":"101","name":"Alpha Tester","email":"alpha@example.com"}
+{"id":"102","name":"Beta Tester","email":"beta@example.com"}
+
+#### 8b) Using jq to filter by email matching 'example.com':
+{
+  "id": "101",
+  "name": "Alpha Tester",
+  "email": "alpha@example.com"
+}
+{
+  "id": "102",
+  "name": "Beta Tester",
+  "email": "beta@example.com"
+}
+
+#### 8c) Sorting by name with jq:
+{
+  "id": "101",
+  "name": "Alpha Tester",
+  "email": "alpha@example.com"
+}
+{
+  "id": "102",
+  "name": "Beta Tester",
+  "email": "beta@example.com"
+}
+{
+  "id": "100",
+  "name": "John Doe",
+  "age": "30",
+  "email": "johndoe@newmail.com"
+}
+
+### 9) Simulating a 'join' between tables...
+- Creating an 'orders' table in testdb1...
+{"id":"1","order_id":"9001","user_id":"100","product":"Red Book","price":"15.00"}
+{"id":"2","order_id":"9002","user_id":"101","product":"Blue Pen","price":"2.50"}
+{"id":"3","order_id":"9003","user_id":"999","product":"Green Pencil","price":"1.00"}
+- Listing 'orders':
+{"id":"1","order_id":"9001","user_id":"100","product":"Red Book","price":"15.00"}
+{"id":"2","order_id":"9002","user_id":"101","product":"Blue Pen","price":"2.50"}
+{"id":"3","order_id":"9003","user_id":"999","product":"Green Pencil","price":"1.00"}
+
+#### 9a) Converting 'users' to CSV (id,name,email) => users.csv
+"100","John Doe","johndoe@newmail.com"
+"101","Alpha Tester","alpha@example.com"
+"102","Beta Tester","beta@example.com"
+
+#### 9b) Converting 'orders' to CSV (order_id,user_id,product,price) => orders.csv
+"9001","100","Red Book","15.00"
+"9002","101","Blue Pen","2.50"
+"9003","999","Green Pencil","1.00"
+
+#### 9c) Sort both CSV files by their key for join.
+- Sorted 'users':
+"100","John Doe","johndoe@newmail.com"
+"101","Alpha Tester","alpha@example.com"
+"102","Beta Tester","beta@example.com"
+- Sorted 'orders':
+"9001","100","Red Book","15.00"
+"9002","101","Blue Pen","2.50"
+"9003","999","Green Pencil","1.00"
+
+#### 9d) Join by user_id (users.id == orders.user_id)
+(We have to specify that for 'users' the join field is column 1, for 'orders' it's column 2)
+- Result of join (joined.csv):
+"100","John Doe","johndoe@newmail.com","9001","Red Book","15.00"
+"101","Alpha Tester","alpha@example.com","9002","Blue Pen","2.50"
+
+#### 9e) Explanation:
+The joined.csv lines combine the user info with the order info if the IDs match.
+
+### 10) Testing automatic and invalid IDs in testdb3...
+- Case A: Save without providing an ID at all (should auto-generate id=1).
+{"id":"1","name":"Bob","email":"bob@example.com"}
+- Listing 'people' (should see Bob with id=1):
+{"id":"1","name":"Bob","email":"bob@example.com"}
+
+- Case B: Save another record without ID (auto-generate id=2).
+{"id":"2","name":"Alice","email":"alice@example.com"}
+- Listing 'people' (should see Bob (id=1) and Alice (id=2)):
+{"id":"1","name":"Bob","email":"bob@example.com"}
+{"id":"2","name":"Alice","email":"alice@example.com"}
+
+- Case C: Provide a valid positive integer ID.
+{"id":"10","name":"Charlie","email":"charlie@example.com"}
+- Listing 'people' (should see Bob (id=1), Alice (id=2), and Charlie (id=10)):
+{"id":"1","name":"Bob","email":"bob@example.com"}
+{"id":"2","name":"Alice","email":"alice@example.com"}
+{"id":"10","name":"Charlie","email":"charlie@example.com"}
+
+- Case D: Provide an invalid (negative) ID, expecting an error.
+Error: 'id' must be a positive integer, got '-5'
+- Listing 'people' again (no changes expected):
+{"id":"1","name":"Bob","email":"bob@example.com"}
+{"id":"2","name":"Alice","email":"alice@example.com"}
+{"id":"10","name":"Charlie","email":"charlie@example.com"}
+
+- Case E: Provide an invalid (non-numeric) ID, expecting an error.
+Error: 'id' must be a positive integer, got 'abc'
+- Listing 'people' again (no changes expected):
+{"id":"1","name":"Bob","email":"bob@example.com"}
+{"id":"2","name":"Alice","email":"alice@example.com"}
+{"id":"10","name":"Charlie","email":"charlie@example.com"}
+
+### 10) End of tests for testdb3.
+
+### 11) Final checks and cleanup hints...
+- Database directories currently exist at testdb1, testdb2 and testdb3
+- If you want to remove them, run: rm -rf testdb1 testdb2 testdb3
+- CSV and JSON files (users.csv, orders.csv, etc.) are also in the current directory.
+
+=== End of test script for simpledb ===
