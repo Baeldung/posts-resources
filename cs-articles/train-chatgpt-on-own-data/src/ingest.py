@@ -5,7 +5,7 @@ from openai import OpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 import config as cfg
-from src.pdf_utils import pdf_to_text
+from pdf_utils import pdf_to_text
 
 client = OpenAI(api_key=cfg.OPENAI_API_KEY)
 
