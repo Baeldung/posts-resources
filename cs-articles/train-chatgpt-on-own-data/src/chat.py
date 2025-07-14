@@ -59,15 +59,14 @@ def chat_round(user_question: str, history: Optional[list[dict]] = None) -> str:
             context_text += "]"
 
         context_text += f"\n{chunk['text']}\n\n"
-
     # Create system message with retrieved context
     system_content = (
         "You are customer-support agent. Answer questions about "
-        "Spring, Java, and web development. Use the following Baeldung articles "
+        "Spring, Java, and web development. Use the following articles "
         "as context for your answer.\n\n"
         f"Knowledge Base Context:\n{context_text}\n\n"
         "If the context doesn't contain relevant information, use your general knowledge "
-        "but prioritize Baeldung's perspective."
+        "but prioritize the context's perspective."
     )
 
     system_msg = {"role": "system", "content": system_content}

@@ -60,8 +60,8 @@ print(f"Generated {len(chunks)} chunks")
 # -------------------------------------------------------------------------
 embeds = []
 for piece in chunks:
-    emb_resp = client.embeddings.create(model=cfg.EMBEDDING_MODEL, input=piece)
-    embeds.append(emb_resp.data[0].embedding)
+    embedding_response = client.embeddings.create(model=cfg.EMBEDDING_MODEL, input=piece)
+    embeds.append(embedding_response.data[0].embedding)
 
 embeds_np = np.array(embeds, dtype="float32")
 
